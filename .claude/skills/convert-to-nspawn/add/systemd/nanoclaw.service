@@ -1,0 +1,27 @@
+[Unit]
+Description=NanoClaw Agent Service
+Documentation=https://github.com/qwibitai/NanoClaw
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# NanoClaw must run as root so systemd-nspawn can create containers without
+# user namespace mapping issues. Agents run as the non-root "node" user inside
+# each nspawn container.
+User=root
+WorkingDirectory={{PROJECT_ROOT}}
+ExecStart={{NODE_BIN}} {{PROJECT_ROOT}}/dist/index.js
+Restart=on-failure
+RestartSec=10s
+# Give containers time to finish before force-killing
+TimeoutStopSec=60s
+StandardOutput=journal
+StandardError=journal
+# Pass the home directory so os.homedir() resolves to /root (where the rootfs lives)
+Environment=HOME=/root
+# Load optional .env from project directory
+EnvironmentFile=-{{PROJECT_ROOT}}/.env
+
+[Install]
+WantedBy=multi-user.target

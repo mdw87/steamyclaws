@@ -37,7 +37,7 @@ Then run `/setup`. Claude Code handles everything: dependencies, authentication,
 
 **Small enough to understand.** One process, a few source files and no microservices. If you want to understand the full NanoClaw codebase, just ask Claude Code to walk you through it.
 
-**Secure by isolation.** Agents run in Linux containers (Apple Container on macOS, or Docker) and they can only see what's explicitly mounted. Bash access is safe because commands run inside the container, not on your host.
+**Secure by isolation.** Agents run in Linux containers (Apple Container on macOS, Docker or systemd-nspawn on Linux) and they can only see what's explicitly mounted. Bash access is safe because commands run inside the container, not on your host.
 
 **Built for the individual user.** NanoClaw isn't a monolithic framework; it's software that fits each user's exact needs. Instead of becoming bloatware, NanoClaw is designed to be bespoke. You make your own fork and have Claude Code modify it to match your needs.
 
@@ -59,7 +59,7 @@ Then run `/setup`. Claude Code handles everything: dependencies, authentication,
 - **Main channel** - Your private channel (self-chat) for admin control; every group is completely isolated
 - **Scheduled tasks** - Recurring jobs that run Claude and can message you back
 - **Web access** - Search and fetch content from the Web
-- **Container isolation** - Agents are sandboxed in Apple Container (macOS) or Docker (macOS/Linux)
+- **Container isolation** - Agents are sandboxed in Apple Container (macOS), Docker (macOS/Linux), or systemd-nspawn (Linux/Steam Deck)
 - **Agent Swarms** - Spin up teams of specialized agents that collaborate on complex tasks. NanoClaw is the first personal AI assistant to support agent swarms.
 - **Optional integrations** - Add Gmail (`/add-gmail`) and more via skills
 
@@ -116,7 +116,10 @@ Skills we'd like to see:
 - macOS or Linux
 - Node.js 20+
 - [Claude Code](https://claude.ai/download)
-- [Apple Container](https://github.com/apple/container) (macOS) or [Docker](https://docker.com/products/docker-desktop) (macOS/Linux)
+- Container runtime (one of):
+  - [Docker](https://docker.com/products/docker-desktop) (macOS/Linux) — default
+  - [Apple Container](https://github.com/apple/container) (macOS) — run `/convert-to-apple-container`
+  - systemd-nspawn (Linux, no Docker required) — run `/convert-to-nspawn`
 
 ## Architecture
 
@@ -141,11 +144,15 @@ Key files:
 
 **Why Docker?**
 
-Docker provides cross-platform support (macOS, Linux and even Windows via WSL2) and a mature ecosystem. On macOS, you can optionally switch to Apple Container via `/convert-to-apple-container` for a lighter-weight native runtime.
+Docker provides cross-platform support (macOS, Linux and even Windows via WSL2) and a mature ecosystem. On macOS, you can optionally switch to Apple Container via `/convert-to-apple-container` for a lighter-weight native runtime. On Linux systems where Docker is unavailable (such as Steam Deck), run `/convert-to-nspawn` to use systemd-nspawn instead.
 
 **Can I run this on Linux?**
 
 Yes. Docker is the default runtime and works on both macOS and Linux. Just run `/setup`.
+
+**Can I run this on Steam Deck?**
+
+Yes. Steam Deck runs SteamOS (Arch-based Linux) and has systemd-nspawn built in. Since Docker isn't available by default on Steam Deck, run `/convert-to-nspawn` after setup. This bootstraps a container rootfs under `~/.local/share/nanoclaw/rootfs` (survives reboots) and switches the runtime to systemd-nspawn. All paths stay within your home directory, respecting Steam Deck's immutable rootfs.
 
 **Is this secure?**
 
